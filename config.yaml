@@ -7,38 +7,43 @@
 # windows only - you can use 'system' to control the "system sounds" volume
 # important: slider indexes start at 0, regardless of which analog pins you're using!
 slider_mapping:
-  0: master
-  1: chrome.exe
-  2: brave.exe
-  3: deej.unmapped
-  4: discord.exe
+  0: Spotify.exe
+  1: mic
+  2:
+    - chrome.exe
+    - edge.exe
+    - firefox.exe
+  3: discord.exe
+  4: deej.current
 
-# supported button list https://github.com/micmonay/keybd_event/blob/master/keybd_windows.go (scroll down)
-# be sure to convert hex values to decimal (hex values start with 0x)
-# for example: to get F13 (0x7C + 0xFFF)
-# 0x7C  = 124
-# 0xFFF = 4095
-# 124 + 4095
-# F13 = 4219
-# 
-# MAKE SURE THE NUMBER OF BUTTONS IN THE CONFIG MATCHES THE NUMBER OF BUTTONS REPORTED BY THE ARDUINO
-# If the number of buttons is not the same, deej might crash 
-#
+# name of each slider that is displayed on the oled when volume is changed
+# leave empty if you want to display the session name
+slider_names:
+  0: Music
+  1: Microphone
+  2: Browser
+  3: Comms
+  4: Current
+
+# this supports single key presses, key combinations and media keys
 button_mapping:
-  0: 4228
-  1: 4272
-  2: 4274
-  3: 4271
-  4: 4229
-  5: 4230
+  0: VOLUME_DOWN
+  1: VOLUME_UP
+  2: VOLUME_MUTE
+  3:  
+    - CTRL
+    - C
+  4: 
+    - CTRL
+    - V
 
 # set this to true if you want the controls inverted (i.e. top is 0%, bottom is 100%)
 invert_sliders: false
 
 # settings for connecting to the arduino board
-com_port: COM6
-baud_rate: 9600
+com_port: COM5
+baud_rate: 115200
 
 # adjust the amount of signal noise reduction depending on your hardware quality
 # supported values are "low" (excellent hardware), "default" (regular hardware) or "high" (bad, noisy hardware)
-noise_reduction: low
+noise_reduction: default

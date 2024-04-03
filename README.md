@@ -1,25 +1,21 @@
-# In this fork
+# About this fork
 
-This fork of deej adds remappable button support. Buttons must be defined in config with int values. The key values can be found here: https://github.com/micmonay/keybd_event/blob/master/keybd_windows.go (make sure to convert hex values to int)
+This fork improves upon the work by [Miodec](https://github.com/Miodec/deej) which adds support for remappable buttons by simplifying the process of adding new buttons. It also adds support for an oled display, that displays the changed volume and the time while idling.
 
-Be sure to visit the [original repository](https://github.com/omriharel/deej)
+# Additions
+* Support for oled display that shows the changed volume with the corresponding session name
+* Display time while idling
+* Better support for remappable buttons 
+    * The names of the supported buttons are defined [here](./pkg/deej/kbmap.go)
+* Support for button combinations
 
 # How to
 
  - Upload the Arduino code to your board (be sure to change the pin definitions).
- - Download the `deej-release.exe` file and `config.yaml` from the [release section](https://github.com/Miodec/deej/releases/tag/compile) (`deej-dev` will show a debug console window when launched)
+ - Download the `deej-release.exe` file and `config.yaml` from the release section (`deej-dev` will show a debug console window when launched)
  - If you run into any issues, feel free to ask in the [Deej Discord Server](https://discord.gg/nf88NJu)
 
-# Case files
+# Special Thanks
 
-Case files available in the [/models](https://github.com/Miodec/deej/tree/master/models) directory
-
-# Build
-
-Mini build log: https://imgur.com/a/baIDppz
-
-![Finished build](https://i.imgur.com/neM2xle.jpg)
-![Finished build2](https://i.imgur.com/moRmNFJ.jpg)
-
-
-
+- omriharel for the original [deej](https://github.com/omriharel/deej)
+- Miodec for adding [remappable button](https://github.com/Miodec/deej) support

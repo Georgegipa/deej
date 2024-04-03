@@ -3,13 +3,13 @@ package deej
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"strconv"
 
-	"github.com/omriharel/deej/pkg/deej/util"
 	"github.com/micmonay/keybd_event"
+	"github.com/omriharel/deej/pkg/deej/util"
 	"github.com/thoas/go-funk"
 	"go.uber.org/zap"
 )
@@ -267,6 +267,13 @@ func (m *sessionMap) handleSliderMoveEvent(event SliderMoveEvent) {
 					if err := session.SetVolume(event.PercentValue); err != nil {
 						m.logger.Warnw("Failed to set target session volume", "error", err)
 						adjustmentFailed = true
+					} else {
+						//check if name exists in name mapping else use resolved target
+						name := m.deej.config.NameMapping[strconv.Itoa(event.SliderID)]
+						if name == "" {
+							name = strings.TrimSuffix(resolvedTarget, ".exe")
+						}
+						m.deej.serial.WriteToSerialWithNumber(name, int(event.PercentValue*100))
 					}
 				}
 			}
@@ -287,18 +294,36 @@ func (m *sessionMap) handleSliderMoveEvent(event SliderMoveEvent) {
 	}
 }
 
-
 func (m *sessionMap) handleButtonEvent(event ButtonEvent) {
 	if event.Value == 0 {
 		kb, err := keybd_event.NewKeyBonding()
-		
-		i, err := strconv.Atoi(m.deej.config.ButtonMapping[strconv.Itoa(event.ButtonID)][0])
-		kb.SetKeys(i)
-		m.logger.Debugw("Triggering button","keycodeint",i)
-		// m.logger.Debug(0xAD + 0xFFF)
-		err = kb.Launching() 
+		//check if each key is in the map , if they all are then press them
+		keys := m.deej.config.ButtonMapping[strconv.Itoa(event.ButtonID)]
+		//create a map to store the keys
+		remappedKeys := make(map[string]int)
+		for _, key := range keys {
+			//check if the key is in the map
+			val, ok := KeybindingMap[strings.ToUpper(key)]
+			//if it is not in the map then return else add it to the map
+			if !ok {
+				//show which key is not in the map
+				fmt.Printf("key %s not found in map", key)
+				return
+			}
+			remappedKeys[key] = val
+		}
+		//the keys exist , press them
+		for _, i := range remappedKeys {
+			kb.AddKey(i)
+		}
+		kb.Press()
+		time.Sleep(80 * time.Millisecond)
+		kb.Release()
+
 		if err != nil {
 			panic(err)
+		} else {
+			m.logger.Debugw("Pressed keys", "keys", keys)
 		}
 	}
 }

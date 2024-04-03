@@ -18,6 +18,7 @@ import (
 type CanonicalConfig struct {
 	SliderMapping *sliderMap
 	ButtonMapping map[string][]string
+	NameMapping   map[string]string
 
 	ConnectionInfo struct {
 		COMPort  string
@@ -50,6 +51,7 @@ const (
 	configType = "yaml"
 
 	configKeySliderMapping       = "slider_mapping"
+	configShortcutNames          = "slider_names"
 	configKeyButtonMapping       = "button_mapping"
 	configKeyInvertSliders       = "invert_sliders"
 	configKeyCOMPort             = "com_port"
@@ -90,6 +92,9 @@ func NewConfig(logger *zap.SugaredLogger, notifier Notifier) (*CanonicalConfig, 
 	userConfig.SetDefault(configKeySliderMapping, map[string][]string{})
 	userConfig.SetDefault(configKeyButtonMapping, map[string][]string{})
 	userConfig.SetDefault(configKeyInvertSliders, false)
+	userConfig.SetDefault(configShortcutNames, map[string][]string{})
+	userConfig.SetDefault(configKeyNoiseReductionLevel, map[string][]string{})
+
 	userConfig.SetDefault(configKeyCOMPort, defaultCOMPort)
 	userConfig.SetDefault(configKeyBaudRate, defaultBaudRate)
 
@@ -227,6 +232,7 @@ func (cc *CanonicalConfig) populateFromVipers() error {
 	)
 
 	cc.ButtonMapping = cc.userConfig.GetStringMapStringSlice(configKeyButtonMapping)
+	cc.NameMapping = cc.userConfig.GetStringMapString(configShortcutNames)
 
 	// get the rest of the config fields - viper saves us a lot of effort here
 	cc.ConnectionInfo.COMPort = cc.userConfig.GetString(configKeyCOMPort)
