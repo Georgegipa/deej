@@ -12,7 +12,7 @@ This fork improves upon the work by [Miodec](https://github.com/Miodec/deej) whi
 # How to
 
  - Upload the Arduino code to your board (be sure to change the pin definitions).
- - Download the `deej-release.exe` file and `config.yaml` from the release section (`deej-dev` will show a debug console window when launched)
+ - Download the `deej-release.exe` file and `config.yaml` from the [release section](https://github.com/Georgegipa/deej/releases/tag/oled) (`deej-dev` will show a debug console window when launched)
  - If you run into any issues, feel free to ask in the [Deej Discord Server](https://discord.gg/nf88NJu)
 
 # Special Thanks
