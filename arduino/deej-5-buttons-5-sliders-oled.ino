@@ -1,9 +1,19 @@
+#include <Arduino.h>
+#define BUTTON_SUPPORT     // Uncomment in order to enable button support using a keypad (keypad library is required)
+#define BURN_IN_PROTECTION // Uncomment in order to enable burn-in protection for OLED displays
+
+#define INVERT_PERIOD_MS 30000  // Invert colors every 30 seconds
+#define INVERT_DURATION_MS 1000 // Invert colors for 1 second
+#define SERIAL_TIMEOUT_MS 90000 // Timeout for serial communication
+unsigned long lastInvertTime = 0;
+unsigned long lastSerialRxTime = 0;
+bool isInverted = false;
+bool isInInvertableScreen = false;
+
+// deej slider configuration
 const int NUM_SLIDERS = 5;
 const int analogInputs[NUM_SLIDERS] = {A0, A1, A2, A3, A6}; // A4 A5 are used for i2c
 int analogSliderValues[NUM_SLIDERS];
-
-#define OLED_SUPPORT   // Uncomment in order to use this fork with OLED support (adafruit ssd1306 and gfx libraries are required)
-#define BUTTON_SUPPORT // Uncomment in order to enable button support using a keypad (keypad library is required)
 
 #ifdef BUTTON_SUPPORT
 #include <Keypad.h>
@@ -26,7 +36,6 @@ long timeLastButtonPressed = 0;
 
 // a ssd1306 128x32 oled display is used
 // oled configuration
-#ifdef OLED_SUPPORT
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -39,9 +48,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 #define WORD_BUFFER 22 + 1 // save 22 bytes for the word + 1 for the null terminator
 #define VOLUME_BUFFER 4    // save 4 bytes for the volume (100 is the max volume + 1 for the null terminator)
 char incomingData[WORD_BUFFER];
-#endif
-
-
 
 void updateSliderValues()
 {
@@ -99,7 +105,6 @@ void sendSliderValues()
   Serial.println();
 }
 
-#ifdef OLED_SUPPORT
 void showClockScreen()
 {
   display.clearDisplay();
@@ -108,6 +113,34 @@ void showClockScreen()
   display.setCursor(8, 0);
   display.println(incomingData);
   display.display();
+}
+
+void burnInProtection()
+{
+#ifdef BURN_IN_PROTECTION
+  // if the invert period has passed, turn off the screen to protect the OLED
+  if (millis() - lastSerialRxTime > SERIAL_TIMEOUT_MS)
+  {
+    // turn off screen
+    display.clearDisplay();
+    display.display();
+    isInInvertableScreen = false;
+  }
+  // every 30 seconds invert the colors for 1 second
+  if (millis() - lastInvertTime > INVERT_PERIOD_MS)
+  {
+    lastInvertTime = millis();
+    isInverted = true;
+  }
+  if (isInverted && isInInvertableScreen && millis() - lastInvertTime < INVERT_DURATION_MS)
+  {
+    display.invertDisplay(true);
+  }
+  else
+  {
+    display.invertDisplay(false);
+  }
+#endif
 }
 
 void showAppNameScreen(int volume)
@@ -129,12 +162,10 @@ void showAppNameScreen(int volume)
 
   display.display();
 }
-#endif
 
 void setup()
 {
-  Serial.begin(115200);
-#ifdef OLED_SUPPORT
+  Serial.begin(9600);
   if (!display.begin(SSD1306_SWITCHCAPVCC, I2COLED))
   {
     Serial.println(F("SSD1306 allocation failed"));
@@ -143,15 +174,14 @@ void setup()
   display.setTextWrap(false);
   display.clearDisplay();
   display.display();
-#endif
 }
 
 void loop()
 {
-#ifdef OLED_SUPPORT
   if (Serial.available() > 0)
   {
     char firstByte = Serial.read();
+    lastSerialRxTime = millis();
     Serial.println(firstByte);
     switch (firstByte)
     {
@@ -168,6 +198,7 @@ void loop()
       Serial.print("Volume:");
       Serial.println(volume);
       showAppNameScreen(volume);
+      isInInvertableScreen = false;
       break;
     }
     case '<':
@@ -175,15 +206,17 @@ void loop()
       uint8_t readBytes = Serial.readBytesUntil('\n', incomingData, WORD_BUFFER);
       incomingData[readBytes] = '\0';
       showClockScreen();
+      isInInvertableScreen = true;
       break;
     }
     default:
       break;
     }
   }
-#endif
+
   // communicate with the deej
   updateSliderValues();
   updateButtonValues();
   sendSliderValues();
+  burnInProtection();
 }
