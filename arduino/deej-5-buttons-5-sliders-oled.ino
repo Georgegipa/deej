@@ -2,9 +2,9 @@
 #define BUTTON_SUPPORT     // Uncomment in order to enable button support using a keypad (keypad library is required)
 #define BURN_IN_PROTECTION // Uncomment in order to enable burn-in protection for OLED displays
 
-#define INVERT_PERIOD_MS 30000  // Invert colors every 30 seconds
-#define INVERT_DURATION_MS 1000 // Invert colors for 1 second
-#define SERIAL_TIMEOUT_MS 90000 // Timeout for serial communication
+#define INVERT_PERIOD_MS 20000  // Invert colors every 20 seconds
+#define INVERT_DURATION_MS 3000 // Invert colors for 5 seconds
+#define SERIAL_TIMEOUT_MS 70000 // Timeout for serial communication
 unsigned long lastInvertTime = 0;
 unsigned long lastSerialRxTime = 0;
 bool isInverted = false;
@@ -153,13 +153,22 @@ void showAppNameScreen(int volume)
   display.setCursor(0, 0);
   display.println(incomingData);
 
-  int batteryWidth = map(volume, 0, 100, 0, SCREEN_WIDTH); // Adjusting width according to percentage
+  int volumeWidth = map(volume, 0, 100, 0, SCREEN_WIDTH); // Adjusting width according to percentage
   const int topx = 0;
   const int topy = 22;
-  const int diff_end = 0;
-  display.drawRect(topx, topy, SCREEN_WIDTH - diff_end, 10, SSD1306_WHITE);            // Outline of battery indicator
-  display.fillRect(topx + 2, topy + 2, batteryWidth - diff_end - 2, 6, SSD1306_WHITE); // Filling the battery level
+  const int diff_end = 30;
+  display.drawRect(topx, topy, SCREEN_WIDTH - diff_end, 10, SSD1306_WHITE);
+  display.fillRect(topx + 2, topy + 2, volumeWidth - diff_end - 4, 6, SSD1306_WHITE);
 
+  // display the volume percentage next to the volume bar
+  display.setTextSize(1);
+  display.setCursor(SCREEN_WIDTH - diff_end, topy + 1);
+  if (volume < 10)
+    display.print(" ");
+  if (volume < 100)
+    display.print(" ");
+  display.print(volume);
+  display.print("%");
   display.display();
 }
 
