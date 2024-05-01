@@ -153,12 +153,12 @@ void showAppNameScreen(int volume)
   display.setCursor(0, 0);
   display.println(incomingData);
 
-  int volumeWidth = map(volume, 0, 100, 0, SCREEN_WIDTH); // Adjusting width according to percentage
   const int topx = 0;
   const int topy = 22;
   const int diff_end = 30;
   display.drawRect(topx, topy, SCREEN_WIDTH - diff_end, 10, SSD1306_WHITE);
-  display.fillRect(topx + 2, topy + 2, volumeWidth - diff_end - 4, 6, SSD1306_WHITE);
+  int volumeWidth = map(volume, 0, 100, 0, SCREEN_WIDTH- diff_end - 4);
+  display.fillRect(topx + 2, topy + 2, volumeWidth , 6, SSD1306_WHITE);
 
   // display the volume percentage next to the volume bar
   display.setTextSize(1);
